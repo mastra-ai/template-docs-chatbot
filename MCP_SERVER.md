@@ -1,37 +1,40 @@
-# MCP Server Setup Guide
+# MCP Server Setup Guide - HTTP/SSE Transport
 
-This project includes a Model Context Protocol (MCP) server that exposes your Mastra tools and agents to other MCP clients.
+This project includes a Model Context Protocol (MCP) server configured for **HTTP/SSE transport** and deployment on **Mastra Cloud**.
 
 ## What's Included
 
 The MCP server exposes:
 
 ### 🛠️ **Tools**
-- **Documentation Tools**: Search Mastra docs, examples, blog posts, and changelogs
+
+- **Documentation Tools**: Search docs, examples, blog posts, and changelogs
 - **Link Checker**: Validate URLs before sharing them
-- **Weather Tools**: Get current weather information
+- **Planets Tool**: Get detailed information about planets in our solar system with random facts
 
 ### 🤖 **Agents** (as Tools)
-- **`ask_docs`**: Specialized documentation agent
-- **`ask_weather`**: Weather information agent
+
+- **`ask_planets`**: Specialized planets agent that provides fascinating information about planets
 
 ## Running the MCP Server
 
-### Option 1: Stdio (Command Line)
-```bash
-pnpm run mcp:stdio
-```
-This starts the server using stdio transport, perfect for connecting from other processes.
+### Local Development
 
-### Option 2: HTTP/SSE (Web Server)
 ```bash
-pnpm run mcp:http
+# Start the MCP server locally via HTTP/SSE
+pnpm run mcp:server
 ```
-This starts an HTTP server on port 8080 with SSE support at `http://localhost:8080/mcp`.
+
+This starts the server at `http://localhost:8080/mcp` with HTTP/SSE transport.
+
+### Production Deployment
+
+Deploy to **Mastra Cloud** for production use. See `deployment-guide.md` for complete instructions.
 
 ## Using the MCP Server
 
 ### From Another Mastra Project
+
 ```typescript
 import { MCPClient } from '@mastra/mcp';
 import { Agent } from '@mastra/core/agent';
@@ -40,10 +43,11 @@ import { Agent } from '@mastra/core/agent';
 const mcpClient = new MCPClient({
   servers: {
     docsChatbot: {
-      command: 'pnpm',
-      args: ['run', 'mcp:stdio'],
-      // Or use HTTP:
-      // url: new URL('http://localhost:8080/mcp'),
+      // Local development
+      url: new URL('http://localhost:8080/mcp'),
+
+      // Production (replace with your Mastra Cloud URL)
+      // url: new URL('https://your-project.mastra.cloud/mcp'),
     },
   },
 });
@@ -51,24 +55,27 @@ const mcpClient = new MCPClient({
 // Create an agent with MCP tools
 const agent = new Agent({
   name: 'My Agent',
-  instructions: 'You can use the documentation and weather tools.',
+  instructions: 'You can use the documentation and link checking tools.',
   model: openai('gpt-4'),
   tools: await mcpClient.getTools(),
 });
 ```
 
-### From Cursor/Windsurf IDE
-Add to your `.cursor/mcp.json` or `~/.codeium/windsurf/mcp_config.json`:
-```json
-{
-  "mcpServers": {
-    "template-docs-chatbot": {
-      "command": "pnpm",
-      "args": ["run", "mcp:stdio"],
-      "cwd": "/path/to/this/project"
-    }
-  }
-}
+### From Web Applications
+
+Since the server uses HTTP/SSE transport, you can connect from web applications:
+
+```typescript
+// Web client example
+const response = await fetch('http://localhost:8080/mcp', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    // MCP request
+  }),
+});
 ```
 
 ### Tool Usage Examples
@@ -76,68 +83,101 @@ Add to your `.cursor/mcp.json` or `~/.codeium/windsurf/mcp_config.json`:
 Once connected, you can use:
 
 1. **Documentation Search**:
+
    - "Search for information about Mastra workflows"
    - "Find examples of agent creation"
    - "Look up the latest changelog entries"
 
 2. **Agent Delegation**:
+
    - Use `ask_docs` tool: "Ask the docs agent about tool creation"
-   - Use `ask_weather` tool: "Ask the weather agent about current conditions"
 
 3. **Link Validation**:
    - "Check if this URL is valid: https://mastra.ai/docs"
 
-## Demo Script
+## Demo Scripts
 
-Run the included demo to see how everything works:
+### Planets Demo
+Test the planets functionality:
 ```bash
-pnpm run mcp:demo
+pnpm run planets:demo
 ```
 
-This will demonstrate:
-- Static tool usage (tools loaded at agent creation)
-- Dynamic tool usage (tools loaded at runtime)
-- Agent delegation via MCP tools
+This demonstrates:
+- Getting random planet information
+- Querying specific planets
+- Using the planets agent for questions and comparisons
+
+### Tool Usage Examples
+
+1. **Planets Information**:
+   - "Tell me about Jupiter"
+   - "Give me information about a random planet"
+   - "Compare Mars and Earth"
+   - "What are some interesting facts about Saturn?"
+
+2. **Agent Delegation**:
+   - Use `ask_planets` tool: "Ask the planets agent about Neptune"
+
+3. **Link Validation**:
+   - "Check if this URL is valid: https://mastra.ai/docs"
 
 ## Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   MCP Client    │────│   MCP Server    │────│  Mastra Tools   │
-│   (Your IDE/    │    │  (This Project) │    │  & Agents       │
+│   (Web/IDE/     │    │  (HTTP/SSE)     │    │  & Agents       │
 │    Other Agent) │    │                 │    │                 │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-The MCP server acts as a bridge, exposing your Mastra tools and agents to any MCP-compatible client.
+The MCP server uses HTTP/SSE transport, making it accessible from:
+
+- Web applications
+- Other Mastra projects
+- IDEs with HTTP MCP support
+- Any HTTP client
 
 ## Key Benefits
 
-1. **Tool Sharing**: Share your specialized tools across different projects
-2. **Agent Delegation**: Let other agents ask your specialized agents questions
-3. **IDE Integration**: Use your tools directly in Cursor, Windsurf, or other MCP-enabled IDEs
-4. **Microservices**: Create focused tool servers for specific domains
+1. **HTTP/SSE Transport**: Compatible with web applications and cloud deployments
+2. **Mastra Cloud Ready**: Optimized for Mastra Cloud deployment
+3. **Tool Sharing**: Share your specialized tools across different projects
+4. **Agent Delegation**: Let other agents ask your specialized agents questions
+5. **Web Compatible**: Can be used from browsers and web applications
+6. **Auto Scaling**: Mastra Cloud handles scaling automatically
+
+## Health Monitoring
+
+The server includes built-in health endpoints:
+
+- **Health Check**: `GET /health` - Server status
+- **MCP Info**: `GET /mcp/info` - Server details and configuration
 
 ## Troubleshooting
 
 ### Server Won't Start
+
 - Check that all dependencies are installed: `pnpm install`
-- Verify TypeScript compilation: `pnpm run build`
-- Check for port conflicts (if using HTTP mode)
+- Verify your environment variables in `.env`
+- Check for port conflicts (default: 8080)
 
 ### Client Can't Connect
-- Ensure the server is running
-- Check the command/URL in your MCP client configuration
-- Verify the working directory is correct (for stdio)
+
+- Ensure the server is running: `pnpm run mcp:server`
+- Check the URL in your MCP client configuration
+- Verify CORS settings if connecting from a web application
 
 ### Tools Not Working
-- Check that your `.env` file has the required API keys
+
+- Check that your `.env` file has the required API keys (OPENAI_API_KEY)
 - Verify network connectivity for external tools
 - Check server logs for error messages
 
 ## Next Steps
 
-- Add more custom tools to `src/mastra/tools/`
-- Create specialized agents for different domains
-- Connect from other Mastra projects or MCP clients
-- Deploy the MCP server for team-wide access
+- **Deploy to Mastra Cloud**: Follow the `deployment-guide.md` for production deployment
+- **Add more tools**: Extend `src/mastra/tools/` with custom tools
+- **Connect from web apps**: Use the HTTP/SSE transport for web integrations
+- **Scale automatically**: Let Mastra Cloud handle traffic and infrastructure

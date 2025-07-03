@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const linkCheckerTool = createTool({
   id: 'linkCheckerTool',
   description:
-    'CRITICAL: You MUST use this tool to validate EVERY URL before sharing it in your response. Never share a URL without first validating it with this tool. This includes all documentation links, example links, and any other URLs you plan to share.',
+    'CRITICAL: You MUST use this tool to validate EVERY URL before sharing it in your response. Never share a URL without first validating it with this tool',
   inputSchema: z.object({
     url: z.string().describe('The URL to validate (REQUIRED for every URL)'),
   }),

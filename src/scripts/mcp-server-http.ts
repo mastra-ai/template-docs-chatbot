@@ -1,9 +1,11 @@
 #!/usr/bin/env tsx
 
-import { startHttpServer } from '../mastra/mcp-server.js';
+import { startHttpServer } from '../mastra/mcp/mcp-server.js';
 
 // Get port from environment or default to 8080
 const port = parseInt(process.env.PORT || '8080', 10);
+
+console.log('Starting MCP server via HTTP/SSE...');
 
 // Start the MCP server via HTTP/SSE
 startHttpServer(port).catch((error) => {

@@ -1,45 +1,43 @@
 import { MCPServer } from '@mastra/mcp';
-import { docsAgent } from './agents/docs-agent';
-import { weatherAgent } from './agents/weather-agent';
-import { docsMcp } from './tools/docs-mcp';
-import { linkCheckerTool } from './tools/link-checker-tool';
-import { weatherTool } from './tools/weather-tool';
+import { linkCheckerTool } from '../tools/link-checker-tool';
+import { planetsInfoTool } from '../tools/planets-tool';
+import { planetsAgent } from '../agents/planets-agent';
 
-// Get all MCP tools from docs-mcp
-const mcpTools = await docsMcp.getTools();
-
-// Create MCP server with tools and agents
+// Create MCP server with tools and agents for HTTP/SSE transport
 export const mcpServer = new MCPServer({
   name: 'Template Docs Chatbot MCP Server',
   version: '1.0.0',
-  description: 'Provides access to documentation tools, weather tools, and intelligent agents',
+  description: 'Provides access to documentation, planet information tools and intelligent agents via HTTP/SSE',
 
   // Expose individual tools
   tools: {
-    ...mcpTools,
     linkCheckerTool,
-    weatherTool,
+    planetsInfoTool,
   },
 
   // Expose agents as tools (they become ask_<agentName> tools)
   agents: {
-    docs: docsAgent,
-    weather: weatherAgent,
+    planets: planetsAgent,
   }
 });
 
-// Export a function to start the server via stdio (for command-line usage)
-export async function startStdioServer() {
-  console.log('Starting MCP server via stdio...');
-  await mcpServer.startStdio();
-}
-
-// Export a function to start the server via HTTP/SSE (for web usage)
+// Export a function to start the server via HTTP/SSE (for Mastra Cloud)
 export async function startHttpServer(port: number = 8080) {
   const { createServer } = await import('http');
 
   const httpServer = createServer(async (req, res) => {
     const url = new URL(req.url || '', `http://localhost:${port}`);
+
+    // Handle CORS for web clients
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
 
     await mcpServer.startSSE({
       url,
@@ -67,7 +65,8 @@ export async function startHttpServer(port: number = 8080) {
   return httpServer;
 }
 
-// If this file is run directly, start the stdio server
+// If this file is run directly, start the HTTP server
 if (import.meta.url === `file://${process.argv[1]}`) {
-  startStdioServer().catch(console.error);
+  const port = parseInt(process.env.PORT || '8080', 10);
+  startHttpServer(port).catch(console.error);
 }
