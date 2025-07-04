@@ -1,6 +1,22 @@
-import { createTool } from '@mastra/core/tools';
+import { createTool } from '@mastra/core';
 import { z } from 'zod';
 import planetsData from '../../data/planets.json';
+
+type PlanetOutput = {
+  planet: {
+    name: string;
+    type: string;
+    distanceFromSun: string;
+    diameter: string;
+    dayLength: string;
+    yearLength: string;
+    moons: number;
+    atmosphere: string;
+    temperature: string;
+  };
+  randomFact?: string;
+  allPlanets?: string[];
+};
 
 export const planetsInfoTool = createTool({
   id: 'Get Planet Information',
@@ -14,21 +30,7 @@ export const planetsInfoTool = createTool({
       .default(true)
       .describe('Whether to include a random fact about the planet')
   }),
-  outputSchema: z.object({
-    planet: z.object({
-      name: z.string(),
-      type: z.string(),
-      distanceFromSun: z.string(),
-      diameter: z.string(),
-      dayLength: z.string(),
-      yearLength: z.string(),
-      moons: z.number(),
-      atmosphere: z.string(),
-      temperature: z.string(),
-    }),
-    randomFact: z.string().optional(),
-    allPlanets: z.array(z.string()).optional()
-  }),
+
   execute: async ({ context }) => {
     const { planet, includeRandomFact } = context;
 
@@ -47,7 +49,7 @@ export const planetsInfoTool = createTool({
 
     const planetInfo = planetsData[selectedPlanet as keyof typeof planetsData];
 
-    const result: any = {
+    const result: PlanetOutput = {
       planet: {
         name: planetInfo.name,
         type: planetInfo.type,
