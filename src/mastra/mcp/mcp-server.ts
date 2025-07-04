@@ -1,7 +1,5 @@
 import { MCPServer } from '@mastra/mcp';
-import { linkCheckerTool } from '../tools/link-checker-tool';
 import { planetsInfoTool } from '../tools/planets-tool';
-import { planetsAgent } from '../agents/planets-agent';
 
 import { config } from 'dotenv';
 config();
@@ -14,22 +12,18 @@ export const mcpServer = new MCPServer({
 
   // Expose individual tools
   tools: {
-    linkCheckerTool,
     planetsInfoTool,
   },
-
-  // Expose agents as tools (they become ask_<agentName> tools)
-  agents: {
-    planets: planetsAgent,
-  }
 });
 
-// Export a function to start the server via HTTP/SSE (for Mastra Cloud)
-export async function startHttpServer(port: number = 8080) {
+// Export a function to start the server via HTTP/SSE manually
+export async function startHttpServer(port: number = 4111) {
   const { createServer } = await import('http');
 
+  const baseUrl = process.env.SERVER_BASE_URL || `http://localhost:${port}`;
+
   const httpServer = createServer(async (req, res) => {
-    const url = new URL(req.url || '', `http://localhost:${port}`);
+    const url = new URL(req.url || '', baseUrl);
 
     // Handle CORS for web clients
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -52,7 +46,7 @@ export async function startHttpServer(port: number = 8080) {
   });
 
   httpServer.listen(port, () => {
-    console.log(`MCP server running on http://localhost:${port}/mcp`);
+    console.log(`MCP server running on ${baseUrl}/mcp`);
   });
 
   // Graceful shutdown
@@ -70,6 +64,6 @@ export async function startHttpServer(port: number = 8080) {
 
 // If this file is run directly, start the HTTP server
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const port = parseInt(process.env.PORT || '8080', 10);
+  const port = parseInt(process.env.MCP_PORT || '4111', 10);
   startHttpServer(port).catch(console.error);
 }

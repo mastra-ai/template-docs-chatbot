@@ -5,7 +5,7 @@ export const mcpClient = new MCPClient({
   servers: {
     // Connect to local MCP server via HTTP/SSE
     localTools: {
-      url: new URL('http://localhost:8080/mcp'),
+      url: new URL(process.env.MCP_SERVER_URL || 'http://localhost:4111/mcp'),
     },
   },
 });

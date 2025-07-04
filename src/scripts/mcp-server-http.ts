@@ -2,8 +2,8 @@
 
 import { startHttpServer } from '../mastra/mcp/mcp-server.js';
 
-// Get port from environment or default to 8080
-const port = parseInt(process.env.PORT || '8080', 10);
+// Get port from environment or default to 4111 (different from Mastra's 4112)
+const port = parseInt(process.env.MCP_PORT || '4111', 10);
 
 console.log('Starting MCP server via HTTP/SSE...');
 
