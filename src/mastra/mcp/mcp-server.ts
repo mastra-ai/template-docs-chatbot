@@ -3,6 +3,9 @@ import { linkCheckerTool } from '../tools/link-checker-tool';
 import { planetsInfoTool } from '../tools/planets-tool';
 import { planetsAgent } from '../agents/planets-agent';
 
+import { config } from 'dotenv';
+config();
+
 // Create MCP server with tools and agents for HTTP/SSE transport
 export const mcpServer = new MCPServer({
   name: 'Template Docs Chatbot MCP Server',
