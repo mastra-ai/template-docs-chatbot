@@ -1,4 +1,4 @@
-import { openai } from '@ai-sdk/openai';
+import { groq } from '@ai-sdk/groq';
 import { Agent } from '@mastra/core/agent';
 import { mcpClient } from '../mcp/mcp-client';
 
@@ -21,7 +21,7 @@ export const planetsAgent = new Agent({
     6. If no specific planet is mentioned, surprise them with a random planet
 
     Make your responses engaging and educational, suitable for curious minds of all ages. Include the scientific data but explain it in accessible terms.`,
-  model: openai('gpt-4.1'),
+  model: groq(process.env.MODEL ?? "llama-3.3-70b-versatile"),
   // Get tools dynamically from the MCP server
   tools: await mcpClient.getTools(),
 });
