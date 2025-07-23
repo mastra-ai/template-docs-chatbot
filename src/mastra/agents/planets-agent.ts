@@ -21,7 +21,7 @@ export const planetsAgent = new Agent({
     6. If no specific planet is mentioned, surprise them with a random planet
 
     Make your responses engaging and educational, suitable for curious minds of all ages. Include the scientific data but explain it in accessible terms.`,
-  model: openai('gpt-4.1'),
+  model: openai(process.env.MODEL ?? "gpt-4.1"),
   // Get tools dynamically from the MCP server
   tools: await mcpClient.getTools(),
 });
