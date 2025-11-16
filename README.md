@@ -62,7 +62,6 @@ This template includes the following apps and packages:
    pnpm dev:docs     # Docs app (port 3001)
    ```
 
-
 ## Model Configuration
 
 This template supports any AI model provider through Mastra's model router. You can use models from:
