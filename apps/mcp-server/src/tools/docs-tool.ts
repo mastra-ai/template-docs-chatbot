@@ -34,8 +34,8 @@ export const docsTool = createTool({
       .describe('Whether to include a random tip about the function'),
   }),
 
-  execute: async input => {
-    const { functionName, includeRandomTip } = input;
+  execute: async ({ context }) => {
+    const { functionName, includeRandomTip } = context;
 
     // If no function specified, pick a random one
     const functionKeys = Object.keys(functionsData);
